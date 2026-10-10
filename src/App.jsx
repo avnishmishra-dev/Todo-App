@@ -4,7 +4,17 @@ import Add_Todo from "./components/Add_To-do";
 import Todo_Items from "./components/Todo_Items";
 import WelcomeMsg from "./components/WelcomeMsg";
 import { TodoItemsContext } from "./store/todo-item-store";
-import { useState } from "react";
+import { useReducer } from "react";
+
+const todoItemsReducer = (currTodoItems, action) => {
+  let newTodoItems = currTodoItems;
+  if(action.type === "NEW_ITEM") {
+    newTodoItems = [...currTodoItems, action.payload];
+  } else if(action.type === "DELETE_ITEM") {
+    newTodoItems = currTodoItems.filter((_, idx) => idx !== action.payload.index);
+  }
+return newTodoItems;
+}
 
 function App() {
   const todoItems = [
@@ -22,27 +32,25 @@ function App() {
     },
   ];
 
-  const [todoList, setTodoList] = useState(todoItems);
+  const [todoList, dispatchTodoItems] = useReducer(todoItemsReducer, todoItems);
 
-  //Logic for adding to-do
+  //Logic for adding to-do items
   const addTodoItems = (listName, listDate) => {
-    setTodoList(console.log(`New To-do Added => '${listName}' on ${listDate}`));
-
-    //Item passed using spread operator only
-    const newTodoItems = [...todoList, { name: listName, dueDate: listDate }];
-    setTodoList(newTodoItems);
-
-    //Item passed using spread operator with method
-    // setTodoList((currValue) => [
-    //   ...currValue,
-    //   { name: listName, dueDate: listDate },
-    // ]);
+    const newItemAction ={
+      type: "NEW_ITEM",
+      payload: { name: listName, dueDate: listDate },
+    }
+    dispatchTodoItems(newItemAction);
+    console.log(`New To-do Added => '${listName}' on ${listDate}`);
   };
 
-  //Logic for deleting to-do
+  //Logic for deleting to-do items
   const deleteTodoItems = (name, date, index) => {
-    const newList = todoList.filter((_, idx) => idx !== index);
-    setTodoList(newList);
+    const deleteItemAction = {
+      type: "DELETE_ITEM",
+      payload: { name, date, index },
+    };
+    dispatchTodoItems(deleteItemAction);
     console.log(`To-do '${name}' deleted on '${date}' and index is: ${index}`);
   };
 
